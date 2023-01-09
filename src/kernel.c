@@ -16,4 +16,6 @@
 void kernel_main(void) {
     terminal_initialize();
     terminal_writestring("(hn_demo v0.0.1) Kernel init, beginning load...\n");
+
+    
 }

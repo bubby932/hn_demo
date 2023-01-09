@@ -4,6 +4,8 @@
 #include <stdint.h>
 #include <stddef.h>
 
+#include "memory.c"
+
 enum vga_color {
     VGA_COLOR_BLACK = 0,
     VGA_COLOR_BLUE = 1,
@@ -80,13 +82,21 @@ void terminal_putentryat(char c, uint8_t color, size_t x, size_t y) {
     terminal_buffer[index] = vga_entry(c, color);
 }
 
+/// @brief Shifts the terminal up by one line.
+void terminal_shift_up() {
+    size_t offset = VGA_WIDTH * sizeof(uint16_t);
+    memmove(terminal_buffer + offset, terminal_buffer, (VGA_WIDTH * VGA_HEIGHT) - offset);
+    terminal_column = 0;
+    terminal_row = VGA_HEIGHT - 1;
+}
+
 /// @brief Prints a character to the terminal.
 /// @param c The character to print.
 void terminal_putchar(char c) {
     if(c == '\n') {
         terminal_column = 0;
         if(++terminal_row == VGA_HEIGHT)
-            terminal_row = 0;
+            terminal_shift_up();
         return;
     }
 
@@ -94,7 +104,7 @@ void terminal_putchar(char c) {
     if(++terminal_column == VGA_WIDTH) {
         terminal_column = 0;
         if(++terminal_row == VGA_HEIGHT)
-            terminal_row = 0;
+            terminal_shift_up();
     }
 }
 
