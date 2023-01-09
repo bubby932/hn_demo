@@ -53,8 +53,8 @@ void kernel_main(void) {
         terminal_writestring("Serial init OK...\n");
     }
 
-    serial_writestring("(HackNet v0.0.1) Serial init...\n");
-    serial_writestring("Serial out test OK\n");
+    serial_writestring("(HackNet v0.0.1) Serial init...\n\r");
+    serial_writestring("Serial out test OK\n\r");
 
     kpanic("unimplemented");
 }
