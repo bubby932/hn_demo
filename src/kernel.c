@@ -5,6 +5,8 @@
 #include "lib/string.c"
 #include "lib/mm.c"
 #include "lib/serial.c"
+#include "lib/syscall.c"
+#include "lib/gdt.c"
 
 #if defined(__linux__)
 #error "You aren't using a cross compiler!"
@@ -56,5 +58,17 @@ void kernel_main(void) {
     serial_writestring("(HackNet v0.0.1) Serial init...\n\r");
     serial_writestring("Serial out test OK\n\r");
 
+    gdt_init();
+
+    terminal_writestring("GDT init OK...\n");
+
+    syscall_init();
+
+    terminal_writestring("Syscall init OK...\n");
+
     kpanic("unimplemented");
+}
+
+void interrupt_handler() {
+
 }

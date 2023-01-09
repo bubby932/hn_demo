@@ -1,6 +1,8 @@
 #ifndef LIB_HACKNET_GDT
 #define LIB_HACKNET_GDT
 
+#include "kutils.c"
+
 #include <stdint.h>
 
 struct GlobalDescriptorTableDescriptor {
@@ -25,5 +27,9 @@ struct GlobalDescriptorTableEntry {
     unsigned int gran                   : 1;
     unsigned int base_high              : 8;
 } __attribute__((packed));
+
+void gdt_init() {
+    kpanic("unimplemented [gdt_init(void)]\n");
+}
 
 #endif
