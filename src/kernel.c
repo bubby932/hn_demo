@@ -64,7 +64,7 @@ void kernel_main(void) {
 
     terminal_writestring("kheap selftest OK...\n");
 
-    terminal_writestring("Syscall init OK...\n");
+    // terminal_writestring("Syscall init OK...\n");
 
     terminal_writestring("End of kernel reached!\n");
     while(true) {
