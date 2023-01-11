@@ -1,5 +1,4 @@
 /* Constants for the multiboot header. */
-
 .set ALIGN,     1<<0                    /* align loaded modules on page boundaries */
 .set MEMINFO,   1<<1                    /* provide memory map */
 .set FLAGS,     2                       /* Multiboot 'flag' field */
@@ -31,7 +30,7 @@ _start:
     mov $stack_top, %esp
 
     /*
-        INITIALIZE KERNEL STATE
+        INITIALIZE KERNEL STATE HERE
     */
 
     call kernel_main
@@ -53,3 +52,18 @@ _start:
     Set the size of `_start` for debugging and stack traces.
 */
 .size _start, . - _start
+
+gdtr:
+    .word 0 // Limit
+    .long 0 // Base
+
+.global set_gdt
+.type set_gdt, @function
+set_gdt:
+    mov 4(%esp), %ax
+    mov %ax, (gdtr)
+    mov 8(%esp), %eax
+    mov %eax, (gdtr + 2)
+    lgdt (gdtr)
+    
+    ret

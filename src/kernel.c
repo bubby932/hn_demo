@@ -2,10 +2,11 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#define HACKNET_GLOBAL_DEBUG true
+
 #include "lib/string.c"
 #include "lib/mm.c"
 #include "lib/serial.c"
-#include "lib/syscall.c"
 #include "lib/gdt.c"
 
 #if defined(__linux__)
@@ -18,8 +19,23 @@
 
 void kernel_main(void) {
     terminal_initialize();
+    
     terminal_writestring("Terminal init OK...\n");
     terminal_writestring("(hn_demo v0.0.1) Kernel init, beginning load...\n");
+
+    terminal_writestring("Setting up serial port...\n");
+    if(!init_serial()) {
+        error_terminal_writestring("[ERROR] Faulty serial port, serial init failed.\n");
+    } else {
+        terminal_writestring("Serial init OK...\n");
+    }
+
+    serial_writestring("(HackNet v0.0.1) Serial init...\n\r");
+    serial_writestring("Serial out test OK\n\r");
+
+    serial_writestring("Setting up GDT...\n\r");
+    gdt_init();
+    terminal_writestring("GDT init OK...\n");
 
     kheap_init();
     terminal_writestring("Kernel heap init OK...\n");
@@ -48,27 +64,14 @@ void kernel_main(void) {
 
     terminal_writestring("kheap selftest OK...\n");
 
-    terminal_writestring("Setting up serial port...\n");
-    if(!init_serial()) {
-        error_terminal_writestring("[ERROR] Faulty serial port, serial init failed.\n");
-    } else {
-        terminal_writestring("Serial init OK...\n");
-    }
-
-    serial_writestring("(HackNet v0.0.1) Serial init...\n\r");
-    serial_writestring("Serial out test OK\n\r");
-
-    gdt_init();
-
-    terminal_writestring("GDT init OK...\n");
-
-    syscall_init();
-
     terminal_writestring("Syscall init OK...\n");
 
-    kpanic("unimplemented");
+    terminal_writestring("End of kernel reached!\n");
+    while(true) {
+        __asm__ volatile("hlt");
+    }
 }
 
 void interrupt_handler() {
-
+    kpanic("System calls are not implemented!\n");
 }

@@ -2,6 +2,8 @@
 #define LIB_HACKNET_SERIAL
 
 #include <stdbool.h>
+#include <stddef.h>
+
 #include "io.h"
 
 #define PORT 0x3f8  // COM1

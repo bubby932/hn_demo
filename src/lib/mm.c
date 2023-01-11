@@ -1,7 +1,7 @@
 #ifndef LIB_HACKNET_MM
 #define LIB_HACKNET_MM
 
-#define HACKNET_MM_DEBUG true
+#define HACKNET_MM_DEBUG true && HACKNET_GLOBAL_DEBUG
 
 #include <stdint.h>
 #include <stddef.h>
@@ -135,6 +135,15 @@ void *kmalloc(size_t size) {
 
     a->free = false;
     return a->base;
+}
+
+void *kcalloc(size_t size, uint8_t value) {
+    void *ptr = kmalloc(size);
+    if(ptr == NULL)
+        return ptr;
+
+    memset(ptr, value, size);
+    return ptr;
 }
 
 void kfree(void *ptr) {
