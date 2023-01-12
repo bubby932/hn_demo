@@ -4,9 +4,9 @@
 #include "kutils.c"
 #include "serial.c"
 
-#define LIB_GDT_DEBUG true && HACKNET_GLOBAL_DEBUG
-
 #include <stdint.h>
+
+static uint8_t TSS[0x68 + 0x3];
 
 static uint64_t GDT[6];
 
@@ -33,6 +33,7 @@ void create_descriptor(uint8_t *target, uint32_t limit, uint32_t base, uint8_t a
 }
 
 extern void set_gdt(uint16_t limit, uint8_t *base);
+extern void refresh_cs();
 
 void gdt_init() {
     create_descriptor((uint8_t *)GDT, 0, 0, 0, 0);                 // Null Descriptor
@@ -43,19 +44,21 @@ void gdt_init() {
     create_descriptor((uint8_t *)(GDT + 3), 0xFFFFF, 0, 0xFA, 0xC);  // User Mode Code Segment
     create_descriptor((uint8_t *)(GDT + 4), 0xFFFFF, 0, 0xF2, 0xC);  // User Mode Data Segment
 
-    create_descriptor((uint8_t *)(GDT + 5), 0xFFFFF, 0, 0x89, 0xC);  // Task State Segment
+    create_descriptor(TSS, sizeof(TSS), 0, 0x89, 0x9);  // Task State Segment
 
-#if LIB_GDT_DEBUG
     serial_writestring("[GDT] Created all descriptors!\n\r");
     debug_terminal_writestring("[GDT] Created all descriptors!\n");
-#endif
 
     set_gdt(sizeof(uint64_t) * 6, (uint8_t *)GDT);
 
-#if LIB_GDT_DEBUG
     serial_writestring("[GDT] Loaded GDT!\n\r");
     debug_terminal_writestring("[GDT] Loaded GDT!\n");
-#endif
+
+    serial_writestring("[GDT] Refreshing CS...\n\r");
+
+    refresh_cs();
+
+    serial_writestring("[GDT] No bootloop? Cool! CS refreshed successfully!\n\r");
 }
 
 #endif

@@ -4,3 +4,5 @@ build/
 # IDE
 .vscode/
 
+# Security-related headers
+SECURITY.h

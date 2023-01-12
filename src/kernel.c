@@ -2,12 +2,15 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#define HACKNET_GLOBAL_DEBUG true
-
+#include "lib/paging.c"
 #include "lib/string.c"
-#include "lib/mm.c"
 #include "lib/serial.c"
 #include "lib/gdt.c"
+#include "lib/mm.c"
+#include "lib/io.h"
+
+#include "security.c"
+#include "sched.c"
 
 #if defined(__linux__)
 #error "You aren't using a cross compiler!"
@@ -35,7 +38,15 @@ void kernel_main(void) {
 
     serial_writestring("Setting up GDT...\n\r");
     gdt_init();
+    serial_writestring("GDT init OK...\n\r");
     terminal_writestring("GDT init OK...\n");
+
+    serial_writestring("Setting up paging...\n\r");
+
+    paging_init();
+
+    serial_writestring("Paging init OK...\n\r");
+    terminal_writestring("Paging init OK...\n");
 
     kheap_init();
     terminal_writestring("Kernel heap init OK...\n");
@@ -64,9 +75,8 @@ void kernel_main(void) {
 
     terminal_writestring("kheap selftest OK...\n");
 
-    // terminal_writestring("Syscall init OK...\n");
-
     terminal_writestring("End of kernel reached!\n");
+
     while(true) {
         __asm__ volatile("hlt");
     }

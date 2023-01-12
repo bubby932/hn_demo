@@ -52,18 +52,3 @@ _start:
     Set the size of `_start` for debugging and stack traces.
 */
 .size _start, . - _start
-
-gdtr:
-    .word 0 // Limit
-    .long 0 // Base
-
-.global set_gdt
-.type set_gdt, @function
-set_gdt:
-    mov 4(%esp), %ax
-    mov %ax, (gdtr)
-    mov 8(%esp), %eax
-    mov %eax, (gdtr + 2)
-    lgdt (gdtr)
-    
-    ret

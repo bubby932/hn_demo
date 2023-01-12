@@ -1,7 +1,7 @@
 #ifndef LIB_HACKNET_MM
 #define LIB_HACKNET_MM
 
-#define HACKNET_MM_DEBUG true && HACKNET_GLOBAL_DEBUG
+#define HACKNET_MM_DEBUG false
 
 #include <stdint.h>
 #include <stddef.h>
@@ -24,7 +24,7 @@ typedef struct _Allocation {
     void *base;
 } Allocation;
 
-#define HACKNET_KHEAP_SIZE 256000
+#define HACKNET_KHEAP_SIZE 0x100000
 
 static uint8_t kheap[HACKNET_KHEAP_SIZE];
 
@@ -118,7 +118,7 @@ void *kmalloc(size_t size) {
 
     if(a->length > size + sizeof(Allocation)) {
 #if HACKNET_MM_DEBUG
-        debug_terminal_writestring("[MM_DEBUG] alloc success, finishing up\n");
+        debug_terminal_writestring("[MM_DEBUG] block > size+sizeof(Allocation), subdividing\n");
 #endif
         // Subdivide to minimal size.
         Allocation *b = (a->base + size);
@@ -133,8 +133,24 @@ void *kmalloc(size_t size) {
         a->next = b;
     }
 
+    #if HACKNET_MM_DEBUG
+            debug_terminal_writestring("[MM_DEBUG] alloc success, finishing up\n");
+    #endif
+
     a->free = false;
     return a->base;
+}
+
+/// @brief Allocates an aligned block of memory.
+/// @param size The size of memory you need.
+/// @param alignment The alignment you need.
+/// @param free_handle A pointer to a variable you can use to free this memory.
+/// @return The aligned pointer.
+void *kmalloc_aligned(size_t size, size_t align_to, void **free_handle) {
+    void *ptr = kmalloc(size + align_to);
+    size_t offset = ((size_t)ptr) % align_to;
+    *free_handle = (void *)ptr;
+    return (void *)(((size_t)ptr) + offset);
 }
 
 void *kcalloc(size_t size, uint8_t value) {

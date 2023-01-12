@@ -12,6 +12,11 @@ static inline void io_wait() {
     outbyte(0x80, 0);
 }
 
+static inline void io_wait_long() {
+    for (int i = 0; i < 300 * 300 * 100; i++)
+        io_wait();
+}
+
 static inline void invlpg(void *m) {
     __asm__ volatile("invlpg (%0)" : : "b"(m) : "memory");
 }
