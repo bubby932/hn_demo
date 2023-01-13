@@ -8,6 +8,7 @@
 #include "lib/gdt.c"
 #include "lib/mm.c"
 #include "lib/io.h"
+#include "lib/irq.c"
 
 #include "security.c"
 #include "sched.c"
@@ -20,7 +21,8 @@
 #error "This needs to be compiled with i*86-elf GCC."
 #endif
 
-void kernel_main(void) {
+void kernel_main() {
+
     terminal_initialize();
     
     terminal_writestring("Terminal init OK...\n");
@@ -74,6 +76,8 @@ void kernel_main(void) {
     kfree(ptr);
 
     terminal_writestring("kheap selftest OK...\n");
+
+    idt_init();
 
     terminal_writestring("End of kernel reached!\n");
 

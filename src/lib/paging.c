@@ -9,6 +9,7 @@
 
 extern void load_page_directory(uint32_t *);
 extern void enable_paging();
+extern void remap_k();
 
 uint32_t page_directory[1024] __attribute__((aligned(4096)));
 

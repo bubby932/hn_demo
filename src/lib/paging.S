@@ -1,5 +1,6 @@
 .section .text
 .global load_page_directory
+.type load_page_directory, @function
 load_page_directory:
     push %ebp
     mov %esp, %ebp
@@ -11,6 +12,7 @@ load_page_directory:
 
 .section .text
 .global enable_paging
+.type enable_paging, @function
 enable_paging:
     push %ebp
     mov %esp, %ebp
