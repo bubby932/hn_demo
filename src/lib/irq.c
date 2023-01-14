@@ -19,6 +19,7 @@ typedef struct _IdtEntry {
 
 extern void load_idt(uint32_t offset, uint16_t size);
 extern void test_handler_asm(void);
+extern void gp_fault_asm(void);
 
 static IdtEntry IDT[256];
 
@@ -43,6 +44,15 @@ static IdtEntry IDT[256];
 #define ICW4_BUF_SLAVE	0x08	/* Buffered mode/slave */
 #define ICW4_BUF_MASTER	0x0C	/* Buffered mode/master */
 #define ICW4_SFNM	0x10		/* Special fully nested (not) */
+
+#define PIC_EOI		0x20		/* End-of-interrupt command code */
+
+void eoi(uint8_t irq) {
+    if(irq >= 8)
+        outbyte(PIC2_COMMAND, PIC_EOI);
+
+    outbyte(PIC1_COMMAND, PIC_EOI);
+}
 
 void remap_pic(int offset1, int offset2)
 {
@@ -79,36 +89,24 @@ static void idt_set_gate(uint8_t index, uint32_t base, uint16_t segment, uint8_t
 
     IDT[index].segment = segment;
     IDT[index].reserved = 0;
-    IDT[index].reserved = flags | 0x60;
+    IDT[index].flags = flags | 0x60;
 }
 
 void idt_init() {
-    // remap_pic(49, 49+7);
-
-    uint8_t flags = 0;
-
-    
+    remap_pic(49, 49+7);
 
     idt_set_gate(49, (uint32_t)test_handler_asm, 0x08, 0x8E);
+    idt_set_gate(13, (uint32_t)gp_fault_asm, 0x08, 0x8E);
 
     load_idt((uint32_t)IDT, sizeof(IDT));
 
     serial_writestring("bp6\n\r");
 
-    __asm__ volatile("int $49");
+    __asm__ volatile("int $13");
 
     serial_writestring("bp7\n\r");
 }
 
-#define PIC_EOI		0x20		/* End-of-interrupt command code */
-
-void PIC_sendEOI(unsigned char irq)
-{
-	if(irq >= 8)
-		outbyte(PIC2_COMMAND,PIC_EOI);
-
-	outbyte(PIC1_COMMAND,PIC_EOI);
-}
 
 void IRQ_set_mask(unsigned char IRQline) {
     uint16_t port;
@@ -139,8 +137,9 @@ void IRQ_clear_mask(unsigned char IRQline) {
 }
 
 void test_handler_c(void) {
-    serial_writestring("int 49 OK\n\r");
-    PIC_sendEOI(49);
+    debug_terminal_writestring("[IRQ] Interrupt test OK...\n");
+    serial_writestring("[IRQ] Interrupt test OK...\n\r");
+    eoi(49);
 }
 
 void gp_fault_c(void) {
@@ -180,7 +179,7 @@ void gp_fault_c(void) {
 
     io_wait_long();
 
-    __asm__ volatile("ljmp 0x0");
+    __asm__ volatile("ljmpl 0x0");
     while(true);
 }
 

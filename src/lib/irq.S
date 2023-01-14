@@ -4,21 +4,28 @@
 test_handler_asm:
     pushal
 
-    // cld
-    // call test_handler_c
+    cld
+    call test_handler_c
 
     popal
-    hlt
+    iret
+
+.section .text
+.global gp_fault_asm
+.type gp_fault_asm, @function
+gp_fault_asm:
+    pushal
+
+    cld
+    call gp_fault_c
+
+    popal
     iret
 
 .section .data
 idtr:
     .word 0 // size
     .long 0 // Offset
-
-string:
-    .ascii "i am going to kms"
-    .byte 0
 
 .section .text
 .global load_idt
@@ -30,5 +37,5 @@ load_idt: // load_idt (uint32_t offset, uint16_t size)
     mov %eax, (idtr + 2)    // idtr_o   = EAX_32
     mov %cx, (idtr)         // itdr_s   = CS_16
 
-    lidt (idtr)
+    lidt idtr
     ret
