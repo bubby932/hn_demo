@@ -9,10 +9,13 @@
 #include "lib/kutils.c"
 #include "lib/mm.c"
 
-volatile bool sched_active = false;
-
 void init_sched() {
 
+}
+
+void sched_tick_irq(void) {
+    kpanic("[sched] Scheduler tick fired w/o handler!\n");
+    eoi(0);
 }
 
 #endif

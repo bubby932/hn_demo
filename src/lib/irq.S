@@ -1,16 +1,4 @@
 .section .text
-.global test_handler_asm
-.type test_handler_asm, @function
-test_handler_asm:
-    pushal
-
-    cld
-    call test_handler_c
-
-    popal
-    iret
-
-.section .text
 .global gp_fault_asm
 .type gp_fault_asm, @function
 gp_fault_asm:
@@ -18,6 +6,30 @@ gp_fault_asm:
 
     cld
     call gp_fault_c
+
+    popal
+    iret
+
+.section .text
+.global pit_interrupt_asm
+.type pit_interrupt_asm, @function
+pit_interrupt_asm:
+    pushal
+
+    cld
+    call sched_tick_irq
+
+    popal
+    iret
+
+.section .text
+.global keyboard_irq_asm
+.type keyboard_asm, @function
+keyboard_irq_asm:
+    pushal
+
+    cld
+    call key_pressed_irq
 
     popal
     iret

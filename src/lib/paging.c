@@ -7,6 +7,8 @@
 #include "mm.c"
 #include "gdt.c"
 
+#define HIGHER_HALF_BOUNDARY 0x7FFFFFFF
+
 extern void load_page_directory(uint32_t *);
 extern void enable_paging();
 extern void remap_k();

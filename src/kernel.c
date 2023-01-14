@@ -2,13 +2,15 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "lib/syscall.c"
 #include "lib/paging.c"
 #include "lib/string.c"
 #include "lib/serial.c"
+#include "lib/irq.c"
 #include "lib/gdt.c"
+#include "lib/fmt.h"
 #include "lib/mm.c"
 #include "lib/io.h"
-#include "lib/irq.c"
 
 #include "security.c"
 #include "sched.c"
@@ -76,8 +78,13 @@ void kernel_main() {
     kfree(ptr);
 
     terminal_writestring("kheap selftest OK...\n");
+    terminal_writestring("Testing fmt system...\n");
 
-    idt_init();
+    char buffer[100];
+
+    terminal_writestring(itoa(buffer, 12));
+
+    // idt_init();
 
     terminal_writestring("End of kernel reached!\n");
 

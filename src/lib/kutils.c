@@ -1,7 +1,11 @@
 #ifndef LIB_HACKNET_KERNEL_UTILS
 #define LIB_HACKNET_KERNEL_UTILS
 
+#define asm __asm__
+
+#include "serial.c"
 #include "string.c"
+#include "mm.c"
 
 void debug_terminal_writestring(const char *message) {
     terminal_setcolor(vga_entry_color(VGA_COLOR_GREEN, VGA_COLOR_BLACK));
@@ -24,6 +28,10 @@ void error_terminal_writestring(const char *message) {
 void kpanic(const char *message) {
     error_terminal_writestring("HackNet Kernel Panic!\n(An unrecoverable internal error occurred.)\nMessage:\n");
     error_terminal_writestring(message);
+
+    serial_writestring("Kernel panic.\n\r");
+    serial_writestring(message);
+    write_serial('\r');
 
     while(true) {
         __asm__ volatile("cli");

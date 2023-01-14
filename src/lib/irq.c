@@ -18,8 +18,12 @@ typedef struct _IdtEntry {
 } __attribute__((packed)) IdtEntry;
 
 extern void load_idt(uint32_t offset, uint16_t size);
-extern void test_handler_asm(void);
+
 extern void gp_fault_asm(void);
+
+extern void pit_interrupt_asm(void);
+extern void keyboard_irq_asm(void);
+extern void syscall_asm(void);
 
 static IdtEntry IDT[256];
 
@@ -92,54 +96,12 @@ static void idt_set_gate(uint8_t index, uint32_t base, uint16_t segment, uint8_t
     IDT[index].flags = flags | 0x60;
 }
 
-void idt_init() {
-    remap_pic(49, 49+7);
-
-    idt_set_gate(49, (uint32_t)test_handler_asm, 0x08, 0x8E);
-    idt_set_gate(13, (uint32_t)gp_fault_asm, 0x08, 0x8E);
-
-    load_idt((uint32_t)IDT, sizeof(IDT));
-
-    serial_writestring("bp6\n\r");
-
-    __asm__ volatile("int $13");
-
-    serial_writestring("bp7\n\r");
-}
-
-
-void IRQ_set_mask(unsigned char IRQline) {
-    uint16_t port;
-    uint8_t value;
-
-    if(IRQline < 8) {
-        port = PIC1_DATA;
-    } else {
-        port = PIC2_DATA;
-        IRQline -= 8;
-    }
-    value = inbyte(port) | (1 << IRQline);
-    outbyte(port, value);        
-}
-
-void IRQ_clear_mask(unsigned char IRQline) {
-    uint16_t port;
-    uint8_t value;
-
-    if(IRQline < 8) {
-        port = PIC1_DATA;
-    } else {
-        port = PIC2_DATA;
-        IRQline -= 8;
-    }
-    value = inbyte(port) & ~(1 << IRQline);
-    outbyte(port, value);        
-}
-
-void test_handler_c(void) {
-    debug_terminal_writestring("[IRQ] Interrupt test OK...\n");
-    serial_writestring("[IRQ] Interrupt test OK...\n\r");
-    eoi(49);
+void key_pressed_irq(void) {
+    uint8_t c = inbyte(0x60);
+    terminal_writestring("Key pressed: ");
+    terminal_putchar(c);
+    terminal_putchar('\n');
+    eoi(1);
 }
 
 void gp_fault_c(void) {
@@ -154,33 +116,75 @@ void gp_fault_c(void) {
 
     terminal_color = vga_entry_color(VGA_COLOR_WHITE, VGA_COLOR_RED);
 
-    terminal_writestring("WARNING\n");
-    terminal_writestring("GENERAL PROTECTION FAULT : EMERGENCY RECOVERY MODE ACTIVE\n\n");
+    terminal_writestring(" WARNING\n");
+    terminal_writestring(" GENERAL PROTECTION FAULT : EMERGENCY RECOVERY MODE ACTIVE\n\n");
     
-    terminal_writestring("The CPU has raised a general protection fault.\n");
-    terminal_writestring("::Emergency recovery mode activated\n");
+    terminal_writestring(" The CPU has raised a general protection fault.\n");
+    terminal_writestring(" ::Emergency recovery mode activated\n");
     terminal_writestring("--------------------------------------------------------------------------------\n\n");
 
-    terminal_writestring("This system will restart IMMEDIATELY.\n");
-    terminal_writestring("This may have any number of causes, from a program attempting to access kernel\nmemory or something more malicious.");
-    terminal_writestring("THIS IS NOT REPEATABLE AND CANNOT BE DELAYED\n");
+    terminal_writestring(" This may have any number of causes, from a program attempting to access kernel\n memory or something more malicious.\n");
+    terminal_writestring(" Please manually restart the system.\n");
 
-    io_wait_long();
-    terminal_writestring("Restart in 5...");
-    io_wait_long();
-    terminal_writestring("4...");
-    io_wait_long();
-    terminal_writestring("3...");
-    io_wait_long();
-    terminal_writestring("2...");
-    io_wait_long();
-    terminal_writestring("1...\n");
-    terminal_writestring("!! RESTARTING HACKNET KERNEL NOW !!\n");
+    eoi(13);
 
-    io_wait_long();
-
-    __asm__ volatile("ljmpl 0x0");
     while(true);
+}
+
+void IRQ_set_mask(uint8_t IRQline) {
+    uint16_t port;
+    uint8_t value;
+
+    if(IRQline < 8) {
+        port = PIC1_DATA;
+    } else {
+        port = PIC2_DATA;
+        IRQline -= 8;
+    }
+    value = inbyte(port) | (1 << IRQline);
+    outbyte(port, value);        
+}
+
+void IRQ_clear_mask(uint8_t IRQline) {
+    uint16_t port;
+    uint8_t value;
+
+    if(IRQline < 8) {
+        port = PIC1_DATA;
+    } else {
+        port = PIC2_DATA;
+        IRQline -= 8;
+    }
+    value = inbyte(port) & ~(1 << IRQline);
+    outbyte(port, value);        
+}
+
+
+void idt_init() {
+    // Remap PIC
+    remap_pic(49, 49+7);
+
+    // Mask all interrupts
+    IRQ_set_mask(0xFF);
+
+    // Exceptions
+    idt_set_gate(13, (uint32_t)gp_fault_asm, 0x08, 0x8E);
+
+    // IRQs
+    idt_set_gate(0, (uint32_t)pit_interrupt_asm, 0x08, 0xEE);
+    idt_set_gate(1, (uint32_t)keyboard_irq_asm, 0x08, 0xEE);
+
+    // We have keyboard support now, unmask the keyboard interrupt.
+    IRQ_clear_mask(1);
+
+    // Interrupts
+    idt_set_gate(0x80, (uint32_t)syscall_asm, 0x08, 0xEE);
+
+    // Load the interrupt descriptor table register.
+    load_idt((uint32_t)IDT, sizeof(IDT));
+
+    // Enable interrupts.
+    asm volatile("sti");
 }
 
 #endif
