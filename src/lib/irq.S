@@ -34,10 +34,25 @@ keyboard_irq_asm:
     popal
     iret
 
+.section .text
+.global no_handler
+.type no_handler, @function
+no_handler:
+    pushal
+
+    push handler_failed_message
+    call serial_writestring
+
+    popal
+    iret
+
 .section .data
 idtr:
     .word 0 // size
     .long 0 // Offset
+
+handler_failed_message:
+    .ascii "[IRQ] Interrupt called with no registered handler.\n\r\0"
 
 .section .text
 .global load_idt

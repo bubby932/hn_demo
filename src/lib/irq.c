@@ -7,6 +7,7 @@
 #include "kutils.c"
 #include "serial.c"
 #include "string.c"
+#include "gdt.c"
 #include "io.h"
 
 typedef struct _IdtEntry {
@@ -24,6 +25,7 @@ extern void gp_fault_asm(void);
 extern void pit_interrupt_asm(void);
 extern void keyboard_irq_asm(void);
 extern void syscall_asm(void);
+extern void no_handler(void);
 
 static IdtEntry IDT[256];
 
@@ -87,7 +89,7 @@ void remap_pic(int offset1, int offset2)
 	outbyte(PIC2_DATA, a2);
 }
 
-static void idt_set_gate(uint8_t index, uint32_t base, uint16_t segment, uint8_t flags) {
+static inline void idt_set_gate(uint8_t index, uint32_t base, uint16_t segment, uint8_t flags) {
     IDT[index].base_lo = base & 0xFFFF;
     IDT[index].base_hi = (base >> 16) & 0xFFFF;
 
@@ -131,7 +133,7 @@ void gp_fault_c(void) {
     while(true);
 }
 
-void IRQ_set_mask(uint8_t IRQline) {
+void IRQ_set_unblocked(uint8_t IRQline) {
     uint16_t port;
     uint8_t value;
 
@@ -145,7 +147,7 @@ void IRQ_set_mask(uint8_t IRQline) {
     outbyte(port, value);        
 }
 
-void IRQ_clear_mask(uint8_t IRQline) {
+void IRQ_set_blocked(uint8_t IRQline) {
     uint16_t port;
     uint8_t value;
 
@@ -165,7 +167,10 @@ void idt_init() {
     remap_pic(49, 49+7);
 
     // Mask all interrupts
-    IRQ_set_mask(0xFF);
+    IRQ_set_blocked(0xFF);
+
+    for (size_t i = 0; i < 256; i++)
+        idt_set_gate((uint8_t)i, (uint32_t)no_handler, 0x08, 0xEF);
 
     // Exceptions
     idt_set_gate(13, (uint32_t)gp_fault_asm, 0x08, 0x8E);
@@ -175,7 +180,7 @@ void idt_init() {
     idt_set_gate(1, (uint32_t)keyboard_irq_asm, 0x08, 0xEE);
 
     // We have keyboard support now, unmask the keyboard interrupt.
-    IRQ_clear_mask(1);
+    IRQ_set_unblocked(0xFC);
 
     // Interrupts
     idt_set_gate(0x80, (uint32_t)syscall_asm, 0x08, 0xEE);
@@ -185,6 +190,11 @@ void idt_init() {
 
     // Enable interrupts.
     asm volatile("sti");
+
+    reload_cs();
+
+    serial_writestring("[IRQ] Interrupts enabled.\n\r");
+    debug_terminal_writestring("[IRQ] Interrupts set up successfully.\n");
 }
 
 #endif

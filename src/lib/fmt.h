@@ -6,7 +6,7 @@
 #include <stdbool.h>
 
 void reverse(char *string, int length) {
-    for (size_t i = 0; i >= 0; i--) {
+    for (size_t i = length; i > 0; i--) {
         char a = string[i];
         char b = string[length - i];
 
@@ -18,9 +18,9 @@ void reverse(char *string, int length) {
 /// @brief Converts a number into a string.
 /// @param buffer 
 /// @param num 
-char* itoa(char *buffer, uint64_t num) {
+char* itoa(char *buffer, int64_t num) {
     int i = 0;
-    uint64_t working_copy = num;
+    int64_t working_copy = num;
 
     if(working_copy == 0) {
         buffer[i++] = '0';

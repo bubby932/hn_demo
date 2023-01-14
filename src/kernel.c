@@ -80,11 +80,11 @@ void kernel_main() {
     terminal_writestring("kheap selftest OK...\n");
     terminal_writestring("Testing fmt system...\n");
 
-    char buffer[100];
+    // char buffer[100];
 
-    terminal_writestring(itoa(buffer, 12));
+    // terminal_writestring(itoa(buffer, 12));
 
-    // idt_init();
+    idt_init();
 
     terminal_writestring("End of kernel reached!\n");
 
