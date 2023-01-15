@@ -5,43 +5,56 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-void reverse(char *string, int length) {
-    for (size_t i = length; i > 0; i--) {
-        char a = string[i];
-        char b = string[length - i];
-
-        string[i] = b;
-        string[length - i] = b;
+void reverse(char str[], int length)
+{
+    int start = 0;
+    int end = length -1;
+    while (start < end) {
+        char a = *(str + start);
+        *(str + start) = *(str + end);
+        *(str + end) = a;
+        start++;
+        end--;
     }
 }
 
-/// @brief Converts a number into a string.
-/// @param buffer 
-/// @param num 
-char* itoa(char *buffer, int64_t num) {
+char* itoa(int num, char* str, int base)
+{
     int i = 0;
-    int64_t working_copy = num;
+    bool isNegative = false;
 
-    if(working_copy == 0) {
-        buffer[i++] = '0';
-        buffer[i] = '\0';
-        return buffer;
+    if (num == 0) {
+        str[i++] = '0';
+        str[i] = '\0';
+        return str;
     }
 
-    while(working_copy > 0) {
-        int mod = working_copy % 10;
-        buffer[i++] = '0' + mod;
-        mod = working_copy / 10;
+    if(num == 10 && base == 10) {
+        str[i++] = '1';
+        str[i++] = '0';
+        str[i] = '\0';
+        return str;
     }
 
-    if(num < 0)
-        buffer[i++] = '-';
+    if (num < 0 && base == 10) {
+        isNegative = true;
+        num = -num;
+    }
 
-    buffer[i++] = '\0';
+    while (num != 0) {
+        int rem = num % base;
+        str[i++] = (rem > 9)? (rem-10) + 'a' : rem + '0';
+        num = num/base;
+    }
 
-    reverse(buffer, i);
+    if (isNegative)
+        str[i++] = '-';
 
-    return buffer;
+    str[i] = '\0';
+
+    reverse(str, i);
+
+    return str;
 }
 
 #endif

@@ -78,18 +78,16 @@ void kernel_main() {
     kfree(ptr);
 
     terminal_writestring("kheap selftest OK...\n");
-    terminal_writestring("Testing fmt system...\n");
-
-    // char buffer[100];
-
-    // terminal_writestring(itoa(buffer, 12));
+    terminal_writestring("Setting up IDT...\n");
 
     idt_init();
+
+    sched_init();
 
     terminal_writestring("End of kernel reached!\n");
 
     while(true) {
-        __asm__ volatile("hlt");
+        asm volatile("hlt");
     }
 }
 

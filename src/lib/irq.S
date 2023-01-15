@@ -28,7 +28,6 @@ pit_interrupt_asm:
 keyboard_irq_asm:
     pushal
 
-    cld
     call key_pressed_irq
 
     popal
@@ -40,8 +39,7 @@ keyboard_irq_asm:
 no_handler:
     pushal
 
-    push handler_failed_message
-    call serial_writestring
+    call no_handler_c
 
     popal
     iret
@@ -50,9 +48,6 @@ no_handler:
 idtr:
     .word 0 // size
     .long 0 // Offset
-
-handler_failed_message:
-    .ascii "[IRQ] Interrupt called with no registered handler.\n\r\0"
 
 .section .text
 .global load_idt

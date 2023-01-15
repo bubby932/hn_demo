@@ -7,6 +7,7 @@
 #include "kutils.c"
 #include "serial.c"
 #include "string.c"
+#include "fmt.h"
 #include "gdt.c"
 #include "io.h"
 
@@ -89,7 +90,7 @@ void remap_pic(int offset1, int offset2)
 	outbyte(PIC2_DATA, a2);
 }
 
-static inline void idt_set_gate(uint8_t index, uint32_t base, uint16_t segment, uint8_t flags) {
+static void idt_set_gate(uint8_t index, uint32_t base, uint16_t segment, uint8_t flags) {
     IDT[index].base_lo = base & 0xFFFF;
     IDT[index].base_hi = (base >> 16) & 0xFFFF;
 
@@ -129,8 +130,16 @@ void gp_fault_c(void) {
     terminal_writestring(" Please manually restart the system.\n");
 
     eoi(13);
+    while (true);
+}
 
-    while(true);
+uint16_t IRQ_get_mask() {
+    return inbyte(PIC1_DATA) | (inbyte(PIC2_DATA) << 8);
+}
+
+void IRQ_set_mask(uint16_t mask) {
+    outbyte(PIC1_DATA, mask & 0xFFFF);
+    outbyte(PIC2_DATA, (mask >> 8) & 0xFFFF);
 }
 
 void IRQ_set_unblocked(uint8_t IRQline) {
@@ -161,26 +170,26 @@ void IRQ_set_blocked(uint8_t IRQline) {
     outbyte(port, value);        
 }
 
+void no_handler_c() {
+    serial_writestring("[IRQ] Unrecognized interrupt executed!\n\r");
+
+    outbyte(PIC1_COMMAND, PIC_EOI);
+    outbyte(PIC2_COMMAND, PIC_EOI);
+}
+
 
 void idt_init() {
     // Remap PIC
-    remap_pic(49, 49+7);
+    remap_pic(0x20, 0x28);
 
-    // Mask all interrupts
-    IRQ_set_blocked(0xFF);
-
-    for (size_t i = 0; i < 256; i++)
-        idt_set_gate((uint8_t)i, (uint32_t)no_handler, 0x08, 0xEF);
+    IRQ_set_mask(0);
 
     // Exceptions
     idt_set_gate(13, (uint32_t)gp_fault_asm, 0x08, 0x8E);
 
     // IRQs
-    idt_set_gate(0, (uint32_t)pit_interrupt_asm, 0x08, 0xEE);
-    idt_set_gate(1, (uint32_t)keyboard_irq_asm, 0x08, 0xEE);
-
-    // We have keyboard support now, unmask the keyboard interrupt.
-    IRQ_set_unblocked(0xFC);
+    idt_set_gate(0x20, (uint32_t)pit_interrupt_asm, 0x08, 0xEE);
+    idt_set_gate(0x21, (uint32_t)keyboard_irq_asm, 0x08, 0x8E);
 
     // Interrupts
     idt_set_gate(0x80, (uint32_t)syscall_asm, 0x08, 0xEE);
@@ -190,8 +199,6 @@ void idt_init() {
 
     // Enable interrupts.
     asm volatile("sti");
-
-    reload_cs();
 
     serial_writestring("[IRQ] Interrupts enabled.\n\r");
     debug_terminal_writestring("[IRQ] Interrupts set up successfully.\n");

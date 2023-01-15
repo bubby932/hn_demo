@@ -7,15 +7,16 @@
 
 #include "lib/string.c"
 #include "lib/kutils.c"
+#include "lib/irq.c"
 #include "lib/mm.c"
 
-void init_sched() {
+void sched_init() {
 
 }
 
 void sched_tick_irq(void) {
-    kpanic("[sched] Scheduler tick fired w/o handler!\n");
     serial_writestring("sched tick 00\n\r");
+    kpanic("[sched] Scheduler tick fired w/o handler!\n");
     eoi(0);
 }
 
