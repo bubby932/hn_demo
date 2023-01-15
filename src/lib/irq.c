@@ -184,6 +184,9 @@ void idt_init() {
 
     IRQ_set_mask(0);
 
+    for (size_t i = 0; i < 256; i++)
+        idt_set_gate((uint8_t)i, (uint32_t)no_handler, 0x08, 0x8E);
+
     // Exceptions
     idt_set_gate(13, (uint32_t)gp_fault_asm, 0x08, 0x8E);
 

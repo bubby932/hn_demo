@@ -6,7 +6,7 @@
 
 #include <stdint.h>
 
-static uint8_t TSS[0x68 + 0x3];
+static uint32_t TSS[0x68] = {0};
 
 static uint64_t GDT[6];
 

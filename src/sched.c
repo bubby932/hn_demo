@@ -16,7 +16,7 @@ void sched_init() {
 
 void sched_tick_irq(void) {
     serial_writestring("sched tick 00\n\r");
-    kpanic("[sched] Scheduler tick fired w/o handler!\n");
+    // kpanic("[sched] Scheduler tick fired w/o handler!\n");
     eoi(0);
 }
 

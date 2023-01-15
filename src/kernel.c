@@ -8,6 +8,7 @@
 #include "lib/serial.c"
 #include "lib/irq.c"
 #include "lib/gdt.c"
+#include "lib/vfs.c"
 #include "lib/fmt.h"
 #include "lib/mm.c"
 #include "lib/io.h"
@@ -82,7 +83,24 @@ void kernel_main() {
 
     idt_init();
 
-    sched_init();
+    __asm__ volatile("cli");
+
+    // sched_init();
+
+    char *buffer = kmalloc(256);
+
+    debug_terminal_writestring("[RFS] Reading first sector of ATA disk 0.\n");
+    
+    ata_lba_read(0, 1, buffer);
+
+    debug_terminal_writestring("[RFS] Read disk OK? cool!\n");
+    debug_terminal_writestring("[RFS] First 256 bytes:\n");
+
+    terminal_writestring(buffer);
+
+    debug_terminal_writestring("[RFS] Done!\n");
+
+    kfree(buffer);
 
     terminal_writestring("End of kernel reached!\n");
 
