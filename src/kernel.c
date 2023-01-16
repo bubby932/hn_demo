@@ -2,13 +2,14 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "lib/rand_insecure.h"
 #include "lib/syscall.c"
 #include "lib/paging.c"
 #include "lib/string.c"
 #include "lib/serial.c"
 #include "lib/irq.c"
 #include "lib/gdt.c"
-#include "lib/vfs.c"
+#include "fs/vfs.c"
 #include "lib/fmt.h"
 #include "lib/mm.c"
 #include "lib/io.h"
@@ -83,24 +84,85 @@ void kernel_main() {
 
     idt_init();
 
-    __asm__ volatile("cli");
+    // __asm__ volatile("cli");
 
-    // sched_init();
+    // char *buffer = kmalloc(256);
 
-    char *buffer = kmalloc(256);
-
-    debug_terminal_writestring("[RFS] Reading first sector of ATA disk 0.\n");
+    // debug_terminal_writestring("[RFS] Reading first sector of ATA disk 0.\n");
     
-    ata_lba_read(0, 1, buffer);
+    // ata_lba_read(0, 1, buffer);
 
-    debug_terminal_writestring("[RFS] Read disk OK? cool!\n");
-    debug_terminal_writestring("[RFS] First 256 bytes:\n");
+    // debug_terminal_writestring("[RFS] Read disk OK? cool!\n");
+    // debug_terminal_writestring("[RFS] First 256 bytes:\n");
 
-    terminal_writestring(buffer);
+    // terminal_writestring(buffer);
 
-    debug_terminal_writestring("[RFS] Done!\n");
+    // debug_terminal_writestring("[RFS] Done!\n");
 
-    kfree(buffer);
+    // kfree(buffer);
+
+    insec_rand_seed();
+
+    char buffer[25];
+    debug_terminal_writestring("[RAND_t] Random number A: ");
+    debug_terminal_writestring(itoa(insec_rand_next(), buffer, 10));
+    debug_terminal_writestring("\n[RAND_t] Random number B: ");
+    debug_terminal_writestring(itoa(insec_rand_next(), buffer, 10));
+    debug_terminal_writestring("\n[RAND_t] Insecure random suite test complete.\n");
+
+    debug_terminal_writestring("[VFS] Setting up VFS...\n");
+
+    errno_t vfs_err = init_vfs();
+    if(vfs_err) {
+        switch (vfs_err) {
+            case ENOENT: {
+                kpanic("[VFS] Failed to initialize root directory of VFS, panic!\n");
+                break;
+            }
+            case ENOMEM: {
+                kpanic("[VFS] Allocation error while setting up VFS!\n");
+                break;
+            }
+            default: {
+                kpanic("[VFS] Unknown error while setting up VFS, panic!\n");
+                break;
+            }
+        }
+    }
+
+    debug_terminal_writestring("[VFS] VFS init OK! Running selftest...\n");
+
+    inode **inbuf = (inode **)kmalloc(vfs_sysroot->size);
+
+    vfs_sysroot->readdir(vfs_sysroot, inbuf);
+
+
+    debug_terminal_writestring("[VFS] VFS selftest 1 OK!\n");
+
+    debug_terminal_writestring("[VFS] Testing /dev/insec_random\n");
+
+    inode *dev = inbuf[0];
+
+    kfree(inbuf);
+
+    inbuf = (inode **)kmalloc(dev->size);
+
+    dev->readdir(dev, inbuf);
+
+    inode *insec_random = inbuf[3];
+
+    kfree(inbuf);
+
+    debug_terminal_writestring("[VFS] Located /dev/insec_random, reading...\n");
+
+    char insec_buffer[100];
+
+    insec_random->read(insec_random, insec_buffer, 100);
+
+    terminal_write(buffer, 100);
+
+    debug_terminal_writestring("[VFS] Read and printed /dev/insec_random OK...\n");
+    debug_terminal_writestring("[VFS] VFS selftests complete!\n");
 
     terminal_writestring("End of kernel reached!\n");
 

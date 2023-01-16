@@ -9,6 +9,7 @@
 
 #include "kutils.c"
 #include "string.c"
+#include "fmt.h"
 
 /// @brief Used to define a single memory allocation in the list.
 typedef struct _Allocation {
@@ -41,6 +42,11 @@ void kheap_init() {
     base->length = HACKNET_KHEAP_SIZE - sizeof(Allocation);
     base->previous = NULL;
     base->next = NULL;
+
+    debug_terminal_writestring("[MM] HEAP ALLOCATED AT 0x");
+    char buffer[50];
+    debug_terminal_writestring(itoa((int64_t)kheap, buffer, 16));
+    terminal_putchar('\n');
 }
 
 /// @brief Merges all contiguous free allocation blocks into larger ones for faster traversal & general defragmentation.

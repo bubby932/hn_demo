@@ -44,7 +44,7 @@ void gdt_init() {
     create_descriptor((uint8_t *)(GDT + 3), 0xFFFFF, 0, 0xFA, 0xC);  // User Mode Code Segment
     create_descriptor((uint8_t *)(GDT + 4), 0xFFFFF, 0, 0xF2, 0xC);  // User Mode Data Segment
 
-    create_descriptor(TSS, sizeof(TSS), 0, 0x89, 0x9);  // Task State Segment
+    create_descriptor((uint8_t *)TSS, sizeof(TSS), 0, 0x89, 0x9);  // Task State Segment
 
     serial_writestring("[GDT] Created all descriptors!\n\r");
     debug_terminal_writestring("[GDT] Created all descriptors!\n");
