@@ -16,7 +16,7 @@ void insec_rand_seed() {
     debug_terminal_writestring("[RAND] Seeding random number generator...\n");
     current = (uint32_t)(rdtsc() >> 32);
     io_wait_long();
-    current ^= (uint32_t)rdtsc();
+    current *= (uint32_t)rdtsc();
     for (size_t i = 0; i < 50; i++)
         insec_rand_next();
     
