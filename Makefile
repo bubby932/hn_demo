@@ -1,4 +1,4 @@
-CFLAGS = -std=gnu99 -ffreestanding -O5 -Wall -Wextra -fstack-protector -fstack-protector-strong -fstack-protector-all
+CFLAGS = -std=gnu99 -ffreestanding -O5 -Wall -Wextra -fstack-protector -fstack-protector-strong -fstack-protector-all -Werror=implicit-function-declaration
 OBJS = build/boot.o build/kernel.o build/libpaging.o build/libgdt.o build/libirq.o build/libsyscall.o build/ata_r.o build/ata_w.o
 
 hacknet: iso

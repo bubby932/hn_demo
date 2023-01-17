@@ -5,7 +5,6 @@
 
 #include "serial.c"
 #include "string.c"
-#include "mm.c"
 
 void debug_terminal_writestring(const char *message) {
     terminal_setcolor(vga_entry_color(VGA_COLOR_GREEN, VGA_COLOR_BLACK));

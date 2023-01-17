@@ -9,10 +9,10 @@
 #include "lib/serial.c"
 #include "lib/irq.c"
 #include "lib/gdt.c"
-#include "fs/vfs.c"
 #include "lib/fmt.h"
 #include "lib/mm.c"
 #include "lib/io.h"
+#include "fs/vfs.c"
 
 #include "security.c"
 #include "sched.c"
@@ -24,6 +24,8 @@
 #if !defined(__i386__)
 #error "This needs to be compiled with i*86-elf GCC."
 #endif
+
+#include "rescue.c"
 
 void kernel_main() {
 
@@ -83,23 +85,6 @@ void kernel_main() {
     terminal_writestring("Setting up IDT...\n");
 
     idt_init();
-
-    // __asm__ volatile("cli");
-
-    // char *buffer = kmalloc(256);
-
-    // debug_terminal_writestring("[RFS] Reading first sector of ATA disk 0.\n");
-    
-    // ata_lba_read(0, 1, buffer);
-
-    // debug_terminal_writestring("[RFS] Read disk OK? cool!\n");
-    // debug_terminal_writestring("[RFS] First 256 bytes:\n");
-
-    // terminal_writestring(buffer);
-
-    // debug_terminal_writestring("[RFS] Done!\n");
-
-    // kfree(buffer);
 
     insec_rand_seed();
 
@@ -164,7 +149,9 @@ void kernel_main() {
     debug_terminal_writestring("[VFS] Read and printed /dev/insec_random OK...\n");
     debug_terminal_writestring("[VFS] VFS selftests complete!\n");
 
-    terminal_writestring("End of kernel reached!\n");
+    debug_terminal_writestring("[RESCUE] Initializing Rescue Mode ALPHA...\n");
+
+    rescue();
 
     while(true) {
         asm volatile("hlt");
