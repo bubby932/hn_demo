@@ -16,7 +16,8 @@ static char *header = "                    HackNet rescue t-edit v0.0.1         
 #define KEY_NULL 0
 
 #define KEY_CTRL_P 1
-#define KEY_SHIFT_P 2
+#define KEY_LSHIFT_P 2
+#define KEY_RSHIFT_P 10
 
 #define KEY_CAPSLOCK 3
 
@@ -25,7 +26,6 @@ static char *header = "                    HackNet rescue t-edit v0.0.1         
 #define ARROW_RIGHT 8
 #define ARROW_LEFT 9
 
-static bool shift = false;
 static bool ctrl = false;
 static bool caps_lock = false;
 
@@ -40,10 +40,10 @@ static char keymap_lower[256] = {
     '\n', KEY_CTRL_P, 'a', 's',
     'd', 'f', 'g', 'h',
     'j', 'k', 'l', ';',
-    '\'', '`', KEY_SHIFT_P, '\\',
+    '\'', '`', KEY_LSHIFT_P, '\\',
     'z', 'x', 'c', 'v',
     'b', 'n', 'm', ',',
-    '.', '/', KEY_SHIFT_P, '*',
+    '.', '/', KEY_RSHIFT_P, '*',
     KEY_CTRL_P, ' ', KEY_CAPSLOCK, KEY_NULL,
     KEY_NULL, KEY_NULL, KEY_NULL, KEY_NULL,
     KEY_NULL, KEY_NULL, KEY_NULL, KEY_NULL,
@@ -63,10 +63,10 @@ static char keymap_upper[256] = {
     '\n', KEY_CTRL_P, 'A', 'S',
     'D', 'F', 'G', 'H',
     'J', 'K', 'L', ':',
-    '"', '~', KEY_SHIFT_P, '|',
+    '"', '~', KEY_LSHIFT_P, '|',
     'Z', 'X', 'C', 'V',
     'B', 'N', 'M', '<',
-    '>', '?', KEY_SHIFT_P, '*',
+    '>', '?', KEY_RSHIFT_P, '*',
     KEY_CTRL_P, ' ', KEY_CAPSLOCK, KEY_NULL,
     KEY_NULL, KEY_NULL, KEY_NULL, KEY_NULL,
     KEY_NULL, KEY_NULL, KEY_NULL, KEY_NULL,
@@ -80,9 +80,9 @@ static String *backbuffer;
 static size_t cursor;
 
 void render_header() {
-    terminal_buffer[0] = vga_entry('S', shift ? vga_entry_color(VGA_COLOR_GREEN, VGA_COLOR_BLACK) : vga_entry_color(VGA_COLOR_WHITE, VGA_COLOR_WHITE));
+    terminal_buffer[0] = vga_entry('%', ctrl ? vga_entry_color(VGA_COLOR_LIGHT_RED, VGA_COLOR_BLACK) : vga_entry_color(VGA_COLOR_WHITE, VGA_COLOR_WHITE));
 
-    terminal_buffer[1] = vga_entry('A', ctrl ? vga_entry_color(VGA_COLOR_LIGHT_RED, VGA_COLOR_BLACK) : vga_entry_color(VGA_COLOR_WHITE, VGA_COLOR_WHITE));
+    terminal_buffer[1] = vga_entry(' ', vga_entry_color(VGA_COLOR_WHITE, VGA_COLOR_WHITE));
 
     terminal_buffer[2] = vga_entry('C', caps_lock ? vga_entry_color(VGA_COLOR_LIGHT_CYAN, VGA_COLOR_BLACK) : vga_entry_color(VGA_COLOR_WHITE, VGA_COLOR_WHITE));
     terminal_buffer[3] = vga_entry('L', caps_lock ? vga_entry_color(VGA_COLOR_LIGHT_CYAN, VGA_COLOR_BLACK) : vga_entry_color(VGA_COLOR_WHITE, VGA_COLOR_WHITE));
@@ -159,6 +159,8 @@ errno_t rescue() {
 
 void writec(char c) {
     if(c == '\b') {
+        if(cursor < 1)
+            return;
         backbuffer->buffer[--cursor] = '\0';
         render_buffer();
         return;
@@ -188,6 +190,12 @@ void shortcut(uint8_t scan) {
         case '0': {
             cursor = 0;
             render_buffer();
+            return;
+        }
+        case '9': {
+            cursor = backbuffer->length;
+            render_buffer();
+            return;
         }
         default:
             return;
@@ -202,11 +210,7 @@ void putc(uint8_t scan) {
         return;
     }
 
-    if (shift && !caps_lock) {
-        shift = false;
-        render_header();
-        writec(keymap_upper[scan]);
-    } else if (caps_lock) {
+    if (caps_lock) {
         writec(keymap_upper[scan]);
     } else {
         writec(keymap_lower[scan]);
@@ -215,9 +219,16 @@ void putc(uint8_t scan) {
 
 void rescue_keypress(uint8_t scancode) {
     switch(keymap_lower[scancode]) {
-        case KEY_SHIFT_P: {
-            shift = !shift;
-            render_header();
+        case KEY_LSHIFT_P: {
+            if(cursor > 0)
+                cursor--;
+            render_buffer();
+            break;
+        }
+        case KEY_RSHIFT_P: {
+            if(cursor < backbuffer->length)
+                cursor++;
+            render_buffer();
             break;
         }
         case KEY_CTRL_P: {
