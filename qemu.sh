@@ -1,1 +1,1 @@
-qemu-system-i386 -cdrom build/hn_demo.iso -curses
+qemu-system-i386 -cdrom build/must.iso

@@ -1,1 +1,1 @@
-qemu-system-i386 -kernel build/hn_demo.bin
+qemu-system-i386 -kernel build/must.bin

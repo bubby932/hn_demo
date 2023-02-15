@@ -1,0 +1,1 @@
+#define outb(port, value) 

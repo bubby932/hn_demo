@@ -33,6 +33,11 @@ _start:
         INITIALIZE KERNEL STATE HERE
     */
 
+    // TODO call a 32-bit CPP function here that
+    // initializes state and then returns
+    // after that, switch to 64-bit long mode from
+    // assembly.
+
     call kernel_main
 
     /*

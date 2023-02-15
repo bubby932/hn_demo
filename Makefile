@@ -1,32 +1,33 @@
-CFLAGS = -std=gnu99 -ffreestanding -O5 -Wall -Wextra -fstack-protector -fstack-protector-strong -fstack-protector-all
-OBJS = build/boot.o build/kernel.o build/libpaging.o build/libgdt.o build/libirq.o build/libsyscall.o build/ata_r.o build/ata_w.o
+ASM = i686-elf-as
+CC = i686-elf-gcc
+LD = i686-elf-gcc
+CFLAGS = -ffreestanding -O5 -Wall -Wextra -lgcc -Isrc/lib/include
 
-hacknet: iso
+SOURCES = serial.c stdio.c kernel.c
+OBJECTS = build/kernel.o build/serial.o build/stdio.o 
 
-iso: link ensure_out_dir
+must: iso
+
+iso: ensure_out_dir link
 	mkdir -p build/isodir/boot/grub
-	cp build/hn_demo.bin build/isodir/boot/hn_demo.bin
+	cp build/must.bin build/isodir/boot/must.bin
 	cp grub.cfg build/isodir/boot/grub/grub.cfg
-	grub-mkrescue -o build/hn_demo.iso build/isodir
+	grub-mkrescue -o build/must.iso build/isodir
 
-link: asm kernel drivers ensure_out_dir
-	i686-elf-gcc -T linker.ld -o build/hn_demo.bin -ffreestanding -O5 -nostdlib $(OBJS) -O5 -lgcc
-
-kernel: ensure_out_dir
-	i686-elf-gcc -c src/kernel.c -o build/kernel.o $(CFLAGS)
+link: asm ensure_out_dir $(SOURCES)
+	$(LD) -T linker.ld $(OBJECTS) -o build/must.bin
 
 asm: ensure_out_dir
-	i686-elf-as src/boot.s -o build/boot.o
-	i686-elf-as src/lib/paging.S -o build/libpaging.o
-	i686-elf-as src/lib/gdt.S -o build/libgdt.o
-	i686-elf-as src/lib/irq.S -o build/libirq.o
-	i686-elf-as src/lib/syscall.S -o build/libsyscall.o
+	$(ASM) src/boot.s -o build/boot.o
 
-drivers: driver_ata
+kernel.c: ensure_out_dir
+	$(CC) -c src/kernel.c $(CFLAGS) -o build/kernel.o
 
-driver_ata:
-	i686-elf-as src/drivers/ata/ata_r.S -o build/ata_r.o
-	i686-elf-as src/drivers/ata/ata_w.S -o build/ata_w.o
+serial.c: ensure_out_dir
+	$(CC) -c src/lib/include/serial.c $(CFLAGS) -o build/serial.o
+
+stdio.c: ensure_out_dir
+	$(CC) -c src/lib/include/stdio.c $(CFLAGS) -o build/stdio.o
 
 ensure_out_dir:
 	mkdir -p build
