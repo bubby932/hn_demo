@@ -28,7 +28,7 @@ String *new_string(size_t capacity) {
 }
 
 bool ensure_capacity(String *str, size_t capacity) {
-    if(str->capacity <= capacity)
+    if(str->capacity >= capacity)
         return true;
 
     size_t cap = str->capacity;
