@@ -3,8 +3,6 @@
 
 #include <stdint.h>
 
-#include "../rescue.cpp"
-
 #include "paging.cpp"
 #include "kutils.cpp"
 #include "serial.cpp"
@@ -103,7 +101,6 @@ static void idt_set_gate(uint8_t index, uint32_t base, uint16_t segment, uint8_t
 
 extern "C" void key_pressed_irq(void) {
     uint8_t c = inbyte(0x60);
-    rescue_keypress(c);
     eoi(1);
 }
 

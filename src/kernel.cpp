@@ -16,8 +16,6 @@
 #include "security.cpp"
 #include "sched.cpp"
 
-#include "rescue.cpp"
-
 extern "C"
 void kernel_main() {
 
@@ -87,9 +85,7 @@ void kernel_main() {
     debug_terminal_writestring(itoa(insec_rand_next(), buffer, 10));
     debug_terminal_writestring("\n[RAND_t] Insecure random suite test complete.\n");
 
-    debug_terminal_writestring("[RESCUE] Initializing Rescue Mode ALPHA...\n");
-
-    rescue();
+    memset((void *)0xB8000, 0xFF, 80 * 25 * 2);
 
     while(true) {
         asm volatile("hlt");
