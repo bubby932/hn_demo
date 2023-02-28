@@ -1,8 +1,8 @@
 #ifndef LIB_HACKNET_GDT
 #define LIB_HACKNET_GDT
 
-#include "kutils.c"
-#include "serial.c"
+#include "kutils.cpp"
+#include "serial.cpp"
 
 #include <stdint.h>
 
@@ -32,8 +32,8 @@ void create_descriptor(uint8_t *target, uint32_t limit, uint32_t base, uint8_t a
     target[6] |= (flags << 4);
 }
 
-extern void set_gdt(uint16_t limit, uint8_t *base);
-extern void refresh_cs();
+extern "C" void set_gdt(uint16_t limit, uint8_t *base);
+extern "C" void refresh_cs();
 
 void gdt_init() {
     create_descriptor((uint8_t *)GDT, 0, 0, 0, 0);                 // Null Descriptor

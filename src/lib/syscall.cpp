@@ -3,8 +3,8 @@
 
 #include <stdint.h>
 
-#include "kutils.c"
-#include "irq.c"
+#include "kutils.cpp"
+#include "irq.cpp"
 
 typedef uint16_t errno_t;
 
@@ -281,7 +281,7 @@ enum ERRNO {
     ENOTSUP = 95
 };
 
-errno_t syscall(
+extern "C" errno_t syscall(
     uint32_t eax,
     uint32_t ebx,
     uint32_t ecx,

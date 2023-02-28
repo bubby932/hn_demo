@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-#include "kutils.c"
+#include "kutils.cpp"
 
 uint32_t current;
 
@@ -14,12 +14,9 @@ uint32_t insec_rand_next() {
 
 void insec_rand_seed() {
     debug_terminal_writestring("[RAND] Seeding random number generator...\n");
-    current = (uint32_t)(rdtsc() >> 32);
-    io_wait_long();
-    current *= (uint32_t)rdtsc();
-    for (size_t i = 0; i < 50; i++)
-        insec_rand_next();
-    
+
+    current = rdtsc() % 32768;
+
     debug_terminal_writestring("[RAND] Random number generator seeded.\n");
 }
 

@@ -7,8 +7,8 @@
 #include <stddef.h>
 #include <stdbool.h>
 
-#include "kutils.c"
-#include "string.c"
+#include "kutils.cpp"
+#include "string.cpp"
 #include "fmt.h"
 
 /// @brief Used to define a single memory allocation in the list.
@@ -127,7 +127,7 @@ void *kmalloc(size_t size) {
         debug_terminal_writestring("[MM_DEBUG] block > size+sizeof(Allocation), subdividing\n");
 #endif
         // Subdivide to minimal size.
-        Allocation *b = (a->base + size);
+        Allocation *b = (Allocation *)(a->base + size);
 
         b->previous = a;
         b->next = a->next;

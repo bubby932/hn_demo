@@ -4,14 +4,14 @@
 #include "stdbool.h"
 #include "stdint.h"
 
-#include "lib/syscall.c"
-#include "lib/string.c"
+#include "lib/syscall.cpp"
+#include "lib/string.cpp"
 
-#include "rescue_str.c"
+#include "rescue_str.cpp"
 
 typedef uint16_t errno_t;
 
-static char *header = "                    HackNet rescue t-edit v0.0.1                          ";
+static char header[] = "                    HackNet rescue t-edit v0.0.1                          ";
 
 #define KEY_NULL 0
 
@@ -33,7 +33,7 @@ static char keymap_lower[256] = {
     KEY_NULL, KEY_NULL, '1', '2',
     '3', '4', '5', '6',
     '7', '8', '9', '0',
-    '-', '=',' \b', '\t',
+    '-', '=', 36, '\t',
     'q', 'w', 'e', 'r',
     't', 'y', 'u', 'i',
     'o', 'p', '[', ']',
@@ -56,7 +56,7 @@ static char keymap_upper[256] = {
     KEY_NULL, KEY_NULL, '!', '@',
     '#', '$', '%', '^',
     '&', '*', '(', ')',
-    '_', '+',' \b', KEY_NULL,
+    '_', '+', 36, KEY_NULL,
     'Q', 'W', 'E', 'R',
     'T', 'Y', 'U', 'I',
     'O', 'P', '{', '}',
@@ -94,7 +94,7 @@ void render_header() {
 
 
 void render_buffer() {
-    size_t start_index = last_newline_from(backbuffer, cursor);
+    size_t start_index = 0; /* last_newline_from(backbuffer, cursor); */
 
     size_t column = 0;
     size_t row = 1;
@@ -102,18 +102,10 @@ void render_buffer() {
     size_t str_index = start_index;
 
     while(row < VGA_HEIGHT && str_index < backbuffer->length) {
-        if(column == VGA_WIDTH) {
-            column = 0;
-            row++;
-            if(row == VGA_HEIGHT)
-                break;
-            str_index = next_newline_from(backbuffer, str_index);
-            continue;
-        }
         char c = backbuffer->buffer[str_index];
         size_t vga_buffer_index = row * VGA_WIDTH + column;
 
-        if(c == '\n') {
+        if (c == '\n') {
             row++;
             column = 0;
             str_index++;
@@ -142,13 +134,10 @@ errno_t rescue() {
     backbuffer = new_string(VGA_WIDTH * VGA_HEIGHT);
     if(backbuffer == NULL || backbuffer->buffer == NULL)
         kpanic("[RESCUE] Backbuffer allocation failed!\n");
-    serial_writestring("bp1\n\r");
 
     string_pushcstr(backbuffer, "Welcome to [test doc]!", 22);
-    serial_writestring("bp2\n\r");
 
     render_buffer();
-    serial_writestring("bp3\n\r");
 
     terminal_column = 0;
     terminal_row = 1;
@@ -158,10 +147,10 @@ errno_t rescue() {
 }
 
 void writec(char c) {
-    if(c == '\b') {
+    if(c == 36) {
         if(cursor < 1)
             return;
-        backbuffer->buffer[--cursor] = '\0';
+        backbuffer->buffer[cursor--] = '\0';
         render_buffer();
         return;
     }
@@ -195,6 +184,15 @@ void shortcut(uint8_t scan) {
         case '9': {
             cursor = backbuffer->length;
             render_buffer();
+            return;
+        }
+        case 'q': {
+            // explod
+            asm volatile("lidt 0; int $3");
+            return;
+        }
+        case 'n': {
+            writec('\n');
             return;
         }
         default:

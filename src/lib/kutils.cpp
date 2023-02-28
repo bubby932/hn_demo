@@ -3,8 +3,8 @@
 
 #define asm __asm__
 
-#include "serial.c"
-#include "string.c"
+#include "serial.cpp"
+#include "string.cpp"
 
 void debug_terminal_writestring(const char *message) {
     terminal_setcolor(vga_entry_color(VGA_COLOR_GREEN, VGA_COLOR_BLACK));

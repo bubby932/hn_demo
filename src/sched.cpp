@@ -5,15 +5,16 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#include "lib/string.c"
-#include "lib/kutils.c"
-#include "lib/irq.c"
-#include "lib/mm.c"
+#include "lib/string.cpp"
+#include "lib/kutils.cpp"
+#include "lib/irq.cpp"
+#include "lib/mm.cpp"
 
 void sched_init() {
 
 }
 
+extern "C"
 void sched_tick_irq(void) {
     // TODO
     eoi(0);

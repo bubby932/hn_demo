@@ -5,7 +5,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#include "lib/mm.c"
+#include "lib/mm.cpp"
 
 typedef struct _string {
     char *buffer;
@@ -35,7 +35,7 @@ bool ensure_capacity(String *str, size_t capacity) {
     while(cap < capacity)
         cap += 64;
 
-    char *new_buffer = kmalloc(cap);
+    char *new_buffer = (char *)kmalloc(cap);
     if(new_buffer == NULL)
         return false;
 

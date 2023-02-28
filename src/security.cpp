@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-#include "lib/string.c"
+#include "lib/string.cpp"
 
 // Self-hosters - you'll need to create this file yourself and #define STACK_CHK_GUARD manually.
 // Change it between builds!
@@ -11,6 +11,7 @@
 
 uintptr_t __stack_chk_guard = STACK_CHK_GUARD;
 
+extern "C"
 __attribute__((noreturn))
 void __stack_chk_fail(void) {
     __asm__ volatile("cli");

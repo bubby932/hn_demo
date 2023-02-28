@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include <stddef.h>
 
-#include "memory.c"
+#include "memory.cpp"
 
 enum vga_color {
     VGA_COLOR_BLACK = 0,
