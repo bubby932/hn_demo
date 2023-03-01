@@ -1,6 +1,6 @@
 CFLAGS = 	-std=gnu99 -ffreestanding -Wall -Wextra -fno-stack-protector \
 			-fstack-protector-strong -fstack-protector-all -Werror=implicit-function-declaration \
-			-fno-rtti -fno-exceptions -nostdlib -Ofast -lgcc
+			-fno-rtti -fno-exceptions -nostdlib -Ofast -lgcc -Iinclude
 OBJS = build/boot.o build/kernel.o build/libpaging.o build/libgdt.o build/libirq.o build/libsyscall.o build/ata_r.o build/ata_w.o
 
 CXX = i686-elf-g++
@@ -9,6 +9,9 @@ LD = i686-elf-gcc
 AS = i686-elf-as
 
 hacknet: iso
+
+run:
+	qemu-system-i386 -cdrom build/hn_demo.iso
 
 iso: link ensure_out_dir
 	mkdir -p build/isodir/boot/grub
@@ -29,11 +32,7 @@ asm: ensure_out_dir
 	$(AS) src/lib/irq.S -o build/libirq.o
 	$(AS) src/lib/syscall.S -o build/libsyscall.o
 
-drivers: driver_ata
-
-driver_ata:
-	$(AS) src/drivers/ata/ata_r.S -o build/ata_r.o
-	$(AS) src/drivers/ata/ata_w.S -o build/ata_w.o
+drivers:
 
 ensure_out_dir:
 	mkdir -p build

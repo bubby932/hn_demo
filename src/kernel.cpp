@@ -16,6 +16,9 @@
 #include "security.cpp"
 #include "sched.cpp"
 
+#include <must/panic.h>
+#include <drivers/vga.h>
+
 extern "C"
 void kernel_main() {
 
@@ -85,7 +88,7 @@ void kernel_main() {
     debug_terminal_writestring(itoa(insec_rand_next(), buffer, 10));
     debug_terminal_writestring("\n[RAND_t] Insecure random suite test complete.\n");
 
-    memset((void *)0xB8000, 0xFF, 80 * 25 * 2);
+    VgaText::startup_screen("Initializing VGA driver for graphics mode. Please note, everything is working,  this is just a quick text mode message to let you know what's going on.", 152, 15 | 0 << 4);
 
     while(true) {
         asm volatile("hlt");
