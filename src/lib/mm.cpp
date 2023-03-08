@@ -7,8 +7,6 @@
 #include <stddef.h>
 #include <stdbool.h>
 
-#include "fmt.h"
-
 // This file is deprecated - we're switching to a better allocator soon.
 
 /// @brief Used to define a single memory allocation in the list.
@@ -31,9 +29,6 @@ static uint8_t kheap[HACKNET_KHEAP_SIZE];
 
 /// @brief Iniitalizes the kernel heap to a static size of HACKNET_KHEAP_SIZE.
 void kheap_init() {
-#if HACKNET_MM_DEBUG
-    debug_terminal_writestring("[MM_DEBUG] kheap init internal\n");
-#endif
 
     Allocation *base = (Allocation *)kheap;
 

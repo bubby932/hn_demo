@@ -5,7 +5,6 @@
 
 #include "paging.cpp"
 #include "serial.cpp"
-#include "fmt.h"
 #include "gdt.cpp"
 #include "io.h"
 

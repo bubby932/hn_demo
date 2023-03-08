@@ -7,7 +7,6 @@
 #include "lib/serial.cpp"
 #include "lib/irq.cpp"
 #include "lib/gdt.cpp"
-#include "lib/fmt.h"
 #include "lib/mm.cpp"
 #include "lib/io.h"
 
