@@ -1,7 +1,7 @@
 /* Constants for the multiboot header. */
 .set ALIGN,     1<<0                    /* align loaded modules on page boundaries */
 .set MEMINFO,   1<<1                    /* provide memory map */
-.set FLAGS,     2                       /* Multiboot 'flag' field */
+.set FLAGS,     4                       /* Multiboot 'flag' field */
 .set MAGIC,     0x1BADB002              /* Multiboot magic number */
 .set CHECKSUM,  -(MAGIC + FLAGS)        /* Checksum for multiboot */
 
@@ -11,6 +11,18 @@
 .long MAGIC
 .long FLAGS
 .long CHECKSUM
+
+.skip 24
+
+/* Graphics Fields */
+// Linear Graphics Mode
+.long 0
+// Width
+.long 640
+// Height
+.long 480
+// Depth
+.long 16
 
 /* Kernel stack */
 .section .bss
@@ -33,6 +45,7 @@ _start:
         INITIALIZE KERNEL STATE HERE
     */
 
+    push %ebx
     call kernel_main
 
     /*

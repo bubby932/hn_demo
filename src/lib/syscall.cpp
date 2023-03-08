@@ -3,7 +3,6 @@
 
 #include <stdint.h>
 
-#include "kutils.cpp"
 #include "irq.cpp"
 
 typedef uint16_t errno_t;
@@ -290,7 +289,6 @@ extern "C" errno_t syscall(
     uint32_t edi,
     uint32_t ebp
 ) {
-    kpanic("[syscall] Unimplemented!\n");
     eoi(0x80);
 }
 

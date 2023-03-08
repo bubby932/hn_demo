@@ -5,8 +5,6 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#include "lib/string.cpp"
-#include "lib/kutils.cpp"
 #include "lib/irq.cpp"
 #include "lib/mm.cpp"
 

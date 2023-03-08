@@ -4,9 +4,7 @@
 #include <stdint.h>
 
 #include "paging.cpp"
-#include "kutils.cpp"
 #include "serial.cpp"
-#include "string.cpp"
 #include "fmt.h"
 #include "gdt.cpp"
 #include "io.h"
@@ -105,29 +103,13 @@ extern "C" void key_pressed_irq(void) {
 }
 
 extern "C" void gp_fault_c(void) {
+    // TODO: Add more information for logging and terminate offending processes.
+    serial_writestring("General Protection Fault Occurred!");
     __asm__ volatile("cli");
-
-    for (size_t i = 0; i < VGA_HEIGHT * VGA_WIDTH; i++)
-    {
-        terminal_buffer[i] = vga_entry(' ', vga_entry_color(VGA_COLOR_WHITE, VGA_COLOR_RED));
-        terminal_column = 0;
-        terminal_row = 0;
-    }
-
-    terminal_color = vga_entry_color(VGA_COLOR_WHITE, VGA_COLOR_RED);
-
-    terminal_writestring(" WARNING\n");
-    terminal_writestring(" GENERAL PROTECTION FAULT : EMERGENCY RECOVERY MODE ACTIVE\n\n");
-    
-    terminal_writestring(" The CPU has raised a general protection fault.\n");
-    terminal_writestring(" ::Emergency recovery mode activated\n");
-    terminal_writestring("--------------------------------------------------------------------------------\n\n");
-
-    terminal_writestring(" This may have any number of causes, from a program attempting to access kernel\n memory or something more malicious.\n");
-    terminal_writestring(" Please manually restart the system.\n");
-
     eoi(13);
-    while (true);
+    while (true) {
+        __asm__ volatile("hlt");
+    }
 }
 
 uint16_t IRQ_get_mask() {
@@ -201,7 +183,6 @@ void idt_init() {
     asm volatile("sti");
 
     serial_writestring("[IRQ] Interrupts enabled.\n\r");
-    debug_terminal_writestring("[IRQ] Interrupts set up successfully.\n");
 }
 
 #endif

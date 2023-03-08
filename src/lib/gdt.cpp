@@ -1,7 +1,6 @@
 #ifndef LIB_HACKNET_GDT
 #define LIB_HACKNET_GDT
 
-#include "kutils.cpp"
 #include "serial.cpp"
 
 #include <stdint.h>
@@ -11,8 +10,6 @@ static uint32_t TSS[0x68] = {0};
 static uint64_t GDT[6];
 
 void create_descriptor(uint8_t *target, uint32_t limit, uint32_t base, uint8_t access_byte, uint8_t flags) {
-    // Check the limit to make sure that it can be encoded
-    if (limit > 0xFFFFF) kpanic("GDT cannot encode limits larger than 0xFFFFF");
 
     // Encode the limit
     target[0] = limit & 0xFF;
@@ -47,12 +44,10 @@ void gdt_init() {
     create_descriptor((uint8_t *)TSS, sizeof(TSS), 0, 0x89, 0x9);  // Task State Segment
 
     serial_writestring("[GDT] Created all descriptors!\n\r");
-    debug_terminal_writestring("[GDT] Created all descriptors!\n");
 
     set_gdt(sizeof(uint64_t) * 6, (uint8_t *)GDT);
 
     serial_writestring("[GDT] Loaded GDT!\n\r");
-    debug_terminal_writestring("[GDT] Loaded GDT!\n");
 
     serial_writestring("[GDT] Refreshing CS...\n\r");
 

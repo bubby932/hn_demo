@@ -3,8 +3,6 @@
 
 #include <stdint.h>
 
-#include "lib/string.cpp"
-
 // Self-hosters - you'll need to create this file yourself and #define STACK_CHK_GUARD manually.
 // Change it between builds!
 #include "SECURITY.h"
@@ -16,36 +14,22 @@ __attribute__((noreturn))
 void __stack_chk_fail(void) {
     __asm__ volatile("cli");
 
-    for (size_t i = 0; i < VGA_HEIGHT * VGA_WIDTH; i++)
-    {
-        terminal_buffer[i] = vga_entry(' ', vga_entry_color(VGA_COLOR_WHITE, VGA_COLOR_RED));
-        terminal_column = 0;
-        terminal_row = 0;
-    }
+    // FIXME: We should never panic or restart unless something ridiculous happens like a machine check exception
+    //        otherwise, we should take every possible action to ensure that the kernel **never** panics.
 
-    terminal_color = vga_entry_color(VGA_COLOR_WHITE, VGA_COLOR_RED);
-
-    terminal_writestring("WARNING\n");
-    terminal_writestring("STACK OVERRUN DETECTED : EMERGENCY RECOVERY MODE ACTIVE\n\n");
-    
-    terminal_writestring("Buffer overflow exploit detected in kernel space\n");
-    terminal_writestring("::Emergency recovery mode activated\n");
-    terminal_writestring("--------------------------------------------------------------------------------\n\n");
-
-    terminal_writestring("This system will restart IMMEDIATELY - this may be a malicious exploit of your system.\n");
-    terminal_writestring("THIS IS NOT REPEATABLE AND CANNOT BE DELAYED\n");
+    serial_writestring("Kernel overrun occurred - restarting\n\r");
 
     io_wait_long();
-    terminal_writestring("Restart in 5...");
+    serial_writestring("Restart in 5...\n\r");
     io_wait_long();
-    terminal_writestring("4...");
+    serial_writestring("4...\n\r");
     io_wait_long();
-    terminal_writestring("3...");
+    serial_writestring("3...\n\r");
     io_wait_long();
-    terminal_writestring("2...");
+    serial_writestring("2...\n\r");
     io_wait_long();
-    terminal_writestring("1...\n");
-    terminal_writestring("!! RESTARTING HACKNET KERNEL NOW !!\n");
+    serial_writestring("1...\n\r");
+    serial_writestring("!! RESTARTING HACKNET KERNEL NOW !!\n\r");
 
     io_wait_long();
 

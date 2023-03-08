@@ -7,9 +7,9 @@
 #include <stddef.h>
 #include <stdbool.h>
 
-#include "kutils.cpp"
-#include "string.cpp"
 #include "fmt.h"
+
+// This file is deprecated - we're switching to a better allocator soon.
 
 /// @brief Used to define a single memory allocation in the list.
 typedef struct _Allocation {
@@ -42,19 +42,10 @@ void kheap_init() {
     base->length = HACKNET_KHEAP_SIZE - sizeof(Allocation);
     base->previous = NULL;
     base->next = NULL;
-
-    debug_terminal_writestring("[MM] HEAP ALLOCATED AT 0x");
-    char buffer[50];
-    debug_terminal_writestring(itoa((int64_t)kheap, buffer, 16));
-    terminal_putchar('\n');
 }
 
 /// @brief Merges all contiguous free allocation blocks into larger ones for faster traversal & general defragmentation.
 static void merge_all_contiguous() {
-#if HACKNET_MM_DEBUG
-    debug_terminal_writestring("[MM_DEBUG] defragmenting kheap\n");
-#endif
-
     Allocation *current = (Allocation *)kheap;
 
     while(true) {
@@ -76,10 +67,6 @@ static void merge_all_contiguous() {
 /// @param min_size The minimum (inclusive) size in bytes the allocation must meet.
 /// @return The first viable free allocation, or NULL if one is not found.
 static Allocation *find_first_minimal_entry(size_t min_size) {
-#if HACKNET_MM_DEBUG
-    debug_terminal_writestring("[MM_DEBUG] finding first viable alloc block\n");
-#endif
-
     Allocation *base = (Allocation *)kheap;
     if(base->free && base->length >= min_size + 1) return base;
 
@@ -102,16 +89,9 @@ static Allocation *find_first_minimal_entry(size_t min_size) {
 /// @param size The minimum size -in bytes- of memory that must be allocated.
 /// @return A pointer to the beginning of the block, or NULL if the memory cannot be allocated.
 void *kmalloc(size_t size) {
-#if HACKNET_MM_DEBUG
-    debug_terminal_writestring("[MM_DEBUG] kernel heap allocation!\n");
-#endif
-
     Allocation *a = find_first_minimal_entry(size);
 
     if(a == NULL) {
-#if HACKNET_MM_DEBUG
-        debug_terminal_writestring("[MM_DEBUG] alloc failed, defragmenting and retrying");
-#endif
         // No allocations of proper size, defrag and try again
 
         merge_all_contiguous();
@@ -123,9 +103,6 @@ void *kmalloc(size_t size) {
     }
 
     if(a->length > size + sizeof(Allocation)) {
-#if HACKNET_MM_DEBUG
-        debug_terminal_writestring("[MM_DEBUG] block > size+sizeof(Allocation), subdividing\n");
-#endif
         // Subdivide to minimal size.
         Allocation *b = (Allocation *)(a->base + size);
 
@@ -138,10 +115,6 @@ void *kmalloc(size_t size) {
         a->length = size;
         a->next = b;
     }
-
-    #if HACKNET_MM_DEBUG
-            debug_terminal_writestring("[MM_DEBUG] alloc success, finishing up\n");
-    #endif
 
     a->free = false;
     return a->base;
@@ -159,19 +132,7 @@ void *kmalloc_aligned(size_t size, size_t align_to, void **free_handle) {
     return (void *)(((size_t)ptr) + offset);
 }
 
-void *kcalloc(size_t size, uint8_t value) {
-    void *ptr = kmalloc(size);
-    if(ptr == NULL)
-        return ptr;
-
-    memset(ptr, value, size);
-    return ptr;
-}
-
 void kfree(void *ptr) {
-#if HACKNET_MM_DEBUG
-    debug_terminal_writestring("[MM_DEBUG] freeing ptr in kheap\n");
-#endif
     Allocation *base = (Allocation *)kheap;
 
     if(base->base == ptr) {
@@ -182,13 +143,8 @@ void kfree(void *ptr) {
 
     Allocation *current = base->next;
     while(true) {
-        if(current == NULL)
-            kpanic("Free of undefined allocation. Double free w/ merge?");
 
         if(current->base == ptr) {
-            if(current->free)
-                kpanic("Double free!");
-
             current->free = true;
             merge_all_contiguous();
             return;
