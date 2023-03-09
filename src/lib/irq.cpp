@@ -3,12 +3,9 @@
 
 #include <stdint.h>
 
-#include "paging.c"
-#include "kutils.c"
-#include "serial.c"
-#include "string.c"
-#include "fmt.h"
-#include "gdt.c"
+#include "paging.cpp"
+#include "serial.cpp"
+#include "gdt.cpp"
 #include "io.h"
 
 typedef struct _IdtEntry {
@@ -19,14 +16,14 @@ typedef struct _IdtEntry {
     uint16_t    base_hi;
 } __attribute__((packed)) IdtEntry;
 
-extern void load_idt(uint32_t offset, uint16_t size);
+extern "C" void load_idt(uint32_t offset, uint16_t size);
 
-extern void gp_fault_asm(void);
+extern "C" void gp_fault_asm(void);
 
-extern void pit_interrupt_asm(void);
-extern void keyboard_irq_asm(void);
-extern void syscall_asm(void);
-extern void no_handler(void);
+extern "C" void pit_interrupt_asm(void);
+extern "C" void keyboard_irq_asm(void);
+extern "C" void syscall_asm(void);
+extern "C" void no_handler(void);
 
 static IdtEntry IDT[256];
 
@@ -99,38 +96,19 @@ static void idt_set_gate(uint8_t index, uint32_t base, uint16_t segment, uint8_t
     IDT[index].flags = flags | 0x60;
 }
 
-void key_pressed_irq(void) {
+extern "C" void key_pressed_irq(void) {
     uint8_t c = inbyte(0x60);
-    terminal_writestring("Key pressed: ");
-    terminal_putchar(c);
-    terminal_putchar('\n');
     eoi(1);
 }
 
-void gp_fault_c(void) {
+extern "C" void gp_fault_c(void) {
+    // TODO: Add more information for logging and terminate offending processes.
+    serial_writestring("General Protection Fault Occurred!");
     __asm__ volatile("cli");
-
-    for (size_t i = 0; i < VGA_HEIGHT * VGA_WIDTH; i++)
-    {
-        terminal_buffer[i] = vga_entry(' ', vga_entry_color(VGA_COLOR_WHITE, VGA_COLOR_RED));
-        terminal_column = 0;
-        terminal_row = 0;
-    }
-
-    terminal_color = vga_entry_color(VGA_COLOR_WHITE, VGA_COLOR_RED);
-
-    terminal_writestring(" WARNING\n");
-    terminal_writestring(" GENERAL PROTECTION FAULT : EMERGENCY RECOVERY MODE ACTIVE\n\n");
-    
-    terminal_writestring(" The CPU has raised a general protection fault.\n");
-    terminal_writestring(" ::Emergency recovery mode activated\n");
-    terminal_writestring("--------------------------------------------------------------------------------\n\n");
-
-    terminal_writestring(" This may have any number of causes, from a program attempting to access kernel\n memory or something more malicious.\n");
-    terminal_writestring(" Please manually restart the system.\n");
-
     eoi(13);
-    while (true);
+    while (true) {
+        __asm__ volatile("hlt");
+    }
 }
 
 uint16_t IRQ_get_mask() {
@@ -170,7 +148,7 @@ void IRQ_set_blocked(uint8_t IRQline) {
     outbyte(port, value);        
 }
 
-void no_handler_c() {
+extern "C" void no_handler_c() {
     serial_writestring("[IRQ] Unrecognized interrupt executed!\n\r");
 
     outbyte(PIC1_COMMAND, PIC_EOI);
@@ -204,7 +182,6 @@ void idt_init() {
     asm volatile("sti");
 
     serial_writestring("[IRQ] Interrupts enabled.\n\r");
-    debug_terminal_writestring("[IRQ] Interrupts set up successfully.\n");
 }
 
 #endif

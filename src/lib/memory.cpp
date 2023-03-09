@@ -5,6 +5,8 @@
 #include <stdint.h>
 #include <stddef.h>
 
+
+
 /// @brief Performs a byte-by-byte comparison of two buffers.
 /// @param a The LHS buffer.
 /// @param b The RHS buffer.

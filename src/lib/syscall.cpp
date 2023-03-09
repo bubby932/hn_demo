@@ -3,8 +3,7 @@
 
 #include <stdint.h>
 
-#include "kutils.c"
-#include "irq.c"
+#include "irq.cpp"
 
 typedef uint16_t errno_t;
 
@@ -281,7 +280,7 @@ enum ERRNO {
     ENOTSUP = 95
 };
 
-errno_t syscall(
+extern "C" errno_t syscall(
     uint32_t eax,
     uint32_t ebx,
     uint32_t ecx,
@@ -290,7 +289,6 @@ errno_t syscall(
     uint32_t edi,
     uint32_t ebp
 ) {
-    kpanic("[syscall] Unimplemented!\n");
     eoi(0x80);
 }
 
