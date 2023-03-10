@@ -1,7 +1,7 @@
-CFLAGS = 	-std=gnu99 -ffreestanding -Wall -Wextra -fno-stack-protector \
+CFLAGS = 	-std=gnu99 -ffreestanding -Wall -Wextra -fstack-protector \
 			-fstack-protector-strong -fstack-protector-all -Werror=implicit-function-declaration \
 			-fno-rtti -fno-exceptions -nostdlib -Ofast -lgcc -Iinclude
-OBJS = build/boot.o build/kernel.o build/libpaging.o build/libgdt.o build/libirq.o build/libsyscall.o build/ata_r.o build/ata_w.o
+OBJS = build/boot.o build/kernel.o build/libpaging.o build/libgdt.o build/libirq.o build/libsyscall.o
 
 CXX = i686-elf-g++
 CC = i686-elf-gcc

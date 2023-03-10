@@ -7,6 +7,9 @@
 // Change it between builds!
 #include "SECURITY.h"
 
+#include "lib/serial.cpp"
+#include "lib/io.h"
+
 uintptr_t __stack_chk_guard = STACK_CHK_GUARD;
 
 extern "C"
