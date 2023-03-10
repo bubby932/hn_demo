@@ -1,12 +1,16 @@
-#ifndef LIB_HACKNET_IO
-#define LIB_HACKNET_IO
+#pragma once
 
 #include <stdint.h>
 
-#define outbyte(port, value) \
-    __asm__ ("outb %%al, %%dx"::"a" (value), "d" (port))
+static inline void outbyte(uint16_t port, uint8_t value) {
+    __asm__("outb %%al, %%dx" ::"a"(value), "d"(port));
+}
 
-#define inbyte(port) ({ unsigned char _v; __asm__ volatile ("inb %%dx, %%al":"=a" (_v):"d" (port)); _v; })
+static inline uint8_t inbyte(uint16_t port) {
+    uint8_t value;
+    __asm__ volatile ("inb %%dx, %%al":"=a" (value):"d" (port));
+    return value;
+}
 
 static inline void io_wait() {
     outbyte(0x80, 0);
@@ -26,5 +30,3 @@ uint64_t rdtsc() {
     __asm__ volatile("rdtsc": "=a"(low), "=d"(high));
     return ((uint64_t)high << 32) | low;
 }
-
-#endif

@@ -1,6 +1,8 @@
-CFLAGS = 	-std=gnu99 -ffreestanding -Wall -Wextra -fstack-protector \
-			-fstack-protector-strong -fstack-protector-all -Werror=implicit-function-declaration \
-			-fno-rtti -fno-exceptions -nostdlib -Ofast -lgcc -Iinclude
+CFLAGS = 	-ffreestanding -Wall -Wextra -fstack-protector \
+			-fstack-protector-strong -fstack-protector-all \
+			-fno-rtti -fno-exceptions -nostdlib -Ofast -lgcc \
+			-Iinclude -pedantic
+
 OBJS = build/boot.o build/kernel.o build/libpaging.o build/libgdt.o build/libirq.o build/libsyscall.o
 
 CXX = i686-elf-g++
