@@ -5,6 +5,7 @@
 
 #include "irq.cpp"
 
+// FIXME: this is extremely concerning
 typedef uint16_t errno_t;
 
 enum ERRNO {
@@ -290,6 +291,7 @@ extern "C" errno_t syscall(
     uint32_t ebp
 ) {
     eoi(0x80);
+    return EINVAL;
 }
 
 #endif
