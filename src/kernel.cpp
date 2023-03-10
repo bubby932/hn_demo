@@ -18,15 +18,21 @@
 
 extern "C"
 void kernel_main(multiboot_info_t *multiboot) {
-    gdt_init();
 
+    // TODO: Rewrite GDT and Paging handlers to be more dynamic
+    //       and overall better organized.
+    gdt_init();
     paging_init();
 
+    // TODO: Remove legacy KHeap.
     kheap_init();
 
+    // TODO: Implement a more open / idiomatic API for the
+    //       interrupt descriptor table.
     idt_init();
 
-    // TODO: impl graphics driver
+    // TODO: Implement a generic graphics driver and then assign
+    //       the proper implementation (text/VESA) at runtime.
 
     while(true) {
         asm volatile("hlt");
