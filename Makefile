@@ -8,16 +8,14 @@ CC = i686-elf-gcc
 LD = i686-elf-gcc
 AS = i686-elf-as
 
-hacknet: iso
-
-run:
-	qemu-system-i386 -cdrom build/hn_demo.iso
-
 iso: link ensure_out_dir
 	mkdir -p build/isodir/boot/grub
 	cp build/hn_demo.bin build/isodir/boot/hn_demo.bin
 	cp grub.cfg build/isodir/boot/grub/grub.cfg
 	grub-mkrescue -o build/hn_demo.iso build/isodir
+
+run:
+	qemu-system-x86_64 -cdrom build/hn_demo.iso
 
 link: asm kernel drivers ensure_out_dir
 	$(LD) -T linker.ld -o build/hn_demo.bin $(OBJS) $(CFLAGS)
